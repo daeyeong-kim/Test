@@ -47,7 +47,17 @@ public class Leavework extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        super.onCreate();
+
+        Calendar calendar = Calendar.getInstance();
+
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+        Log.i("day_of_time",String.valueOf(dayOfWeek));
+
+        if(dayOfWeek == 7 || dayOfWeek == 1){
+            serviceDestroy();
+        }
+
+
         pref = getApplicationContext().getSharedPreferences("pref", MainActivity.MODE_PRIVATE);
 
         id = pref.getString("id", "");
@@ -109,6 +119,7 @@ public class Leavework extends Service {
 
                     Calendar calendar = Calendar.getInstance();
 
+
                     int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH) - 1 ;
                     Log.i("day_of_time",String.valueOf(dayOfMonth));
                     synchronizedLoadUrl("https://loginc.ecounterp.com");
@@ -135,6 +146,16 @@ public class Leavework extends Service {
         return START_STICKY;
     }
 
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        webview.destroy();
+        webview = null;
+        wm.removeView(mView);
+    }
+
+
     private void synchronizedLoadUrl(final String paramString) throws Exception {
         synchronizedLoadUrl( paramString , 5000);
     }
@@ -148,7 +169,7 @@ public class Leavework extends Service {
         });
 
         int randomNum = (int) (Math.random() * randomvalue);
-        Thread.sleep(3000);
+        Thread.sleep(7000);
         Thread.sleep(randomNum);
     }
 
@@ -158,6 +179,12 @@ public class Leavework extends Service {
 
     private String querySelectorAll(String paramString){
         return "document.querySelectorAll('" + paramString.replace("'" , "\\'") + "')";
+    }
+
+    public void serviceDestroy(){
+        // 서비스 죽이기
+        Intent destory = new Intent(getBaseContext(), Leavework.class);
+        stopService(destory);
     }
 
 }

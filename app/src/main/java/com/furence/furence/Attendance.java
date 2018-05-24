@@ -130,6 +130,8 @@ public class Attendance extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        webview.destroy();
+        webview = null;
         wm.removeView(mView);
     }
 

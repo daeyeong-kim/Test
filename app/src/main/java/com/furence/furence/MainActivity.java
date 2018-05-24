@@ -45,6 +45,9 @@ public class MainActivity extends AppCompatActivity
     SharedPreferences pref;
     SharedPreferences.Editor editor;
 
+    int nextT = (24*60*60*1000);
+//    int nextT = 0;
+
     int MY_PERMISSIONS_REQUEST_SYSTEM = 1;
 
     @Override
@@ -194,15 +197,15 @@ public class MainActivity extends AppCompatActivity
         editor = pref.edit();
 
         //스위치의 체크 이벤트를 위한 리스너 등록
-//        System.out.println(pref.getBoolean("attendance", false));
-//        if(pref.getBoolean("attendance", false)){
-//            sw.setChecked(true);
-//        }
-
-        // 서비스 돌고 있는지 확인
-        if(isServiceRunning()){
+        System.out.println(pref.getBoolean("attendance", false));
+        if(pref.getBoolean("attendance", false)){
             sw.setChecked(true);
         }
+
+        // 서비스 돌고 있는지 확인
+//        if(isServiceRunning()){
+//            sw.setChecked(true);
+//        }
 
         sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
@@ -229,15 +232,15 @@ public class MainActivity extends AppCompatActivity
 
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTimeInMillis(System.currentTimeMillis());
-                    calendar.set(Calendar.HOUR_OF_DAY, 22);
-                    calendar.set(Calendar.MINUTE, 56);
+                    calendar.set(Calendar.HOUR_OF_DAY, 00);
+                    calendar.set(Calendar.MINUTE, 10);
                     calendar.set(Calendar.SECOND, 0);
 
                     PendingIntent slPendingIntent = PendingIntent.getService(MainActivity.this, 1, Attendance, PendingIntent.FLAG_ONE_SHOT);
 
                     AlarmManager alarmManager=(AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
-                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis() + nextT ,
                             AlarmManager.INTERVAL_DAY, slPendingIntent);
 
                     /*
@@ -252,23 +255,23 @@ public class MainActivity extends AppCompatActivity
 
 //                    startService(Leavework);           // 서비스 테스트
 
-//                    Calendar calendar2 = Calendar.getInstance();
-//                    calendar2.setTimeInMillis(System.currentTimeMillis());
-//                    calendar2.set(Calendar.HOUR_OF_DAY, 03);
-//                    calendar2.set(Calendar.MINUTE, 30);
-//                    calendar2.set(Calendar.SECOND, 0);
-//
-//                    PendingIntent slPendingIntent2 = PendingIntent.getService(MainActivity.this, 1, Leavework, PendingIntent.FLAG_ONE_SHOT);
-//
-//                    AlarmManager alarmManager2=(AlarmManager) getSystemService(Context.ALARM_SERVICE);
-//
-//                    alarmManager2.setRepeating(alarmManager2.RTC_WAKEUP, calendar2.getTimeInMillis(),
-//                            alarmManager2.INTERVAL_DAY, slPendingIntent2);
+                    Calendar calendar2 = Calendar.getInstance();
+                    calendar2.setTimeInMillis(System.currentTimeMillis());
+                    calendar2.set(Calendar.HOUR_OF_DAY, 00);
+                    calendar2.set(Calendar.MINUTE, 30);
+                    calendar2.set(Calendar.SECOND, 0);
+
+                    PendingIntent slPendingIntent2 = PendingIntent.getService(MainActivity.this, 1, Leavework, PendingIntent.FLAG_ONE_SHOT);
+
+                    AlarmManager alarmManager2=(AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+                    alarmManager2.setRepeating(alarmManager2.RTC_WAKEUP, calendar2.getTimeInMillis() + nextT,
+                            alarmManager2.INTERVAL_DAY, slPendingIntent2);
 
                 }else{
                     // 서비스 돌고 있는지 확인 값  - 저장
-//                    editor.putBoolean("attendance", false);
-//                    editor.commit();
+                    editor.putBoolean("attendance", false);
+                    editor.commit();
 
                     /*
                      *
@@ -284,6 +287,21 @@ public class MainActivity extends AppCompatActivity
                     AlarmManager alarmManager=(AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
                     alarmManager.cancel(slPendingIntent);
+
+                    /*
+                     *
+                     *
+                     *       퇴근 알람 서비스 중지
+                     *
+                     *
+                     */
+                    Intent intent2 = new Intent(MainActivity.this, Leavework.class);
+
+                    PendingIntent slPendingIntent2 = PendingIntent.getService(MainActivity.this, 1, intent2, PendingIntent.FLAG_ONE_SHOT);
+
+                    AlarmManager alarmManager2=(AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+                    alarmManager.cancel(slPendingIntent2);
 
 
                     //서비스 중지
