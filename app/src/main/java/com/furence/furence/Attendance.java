@@ -44,33 +44,50 @@ public class Attendance extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+
 
         Calendar calendar = Calendar.getInstance();
 
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
         Log.i("day_of_time",String.valueOf(dayOfWeek));
 
-        if(dayOfWeek == 7 || dayOfWeek == 1){
-            // 서비스 죽이기
-            serviceDestroy();
-        }
+//        if(dayOfWeek == 7 || dayOfWeek == 1){
+//            // 서비스 죽이기
+//            serviceDestroy();
+//            return;
+//        }
 
 
         pref = getApplicationContext().getSharedPreferences("pref", MainActivity.MODE_PRIVATE);
 
-        id = pref.getString("id", "");
-        passwd = pref.getString("pw", "");
+        this.id = pref.getString("id", "");
+        this.passwd = pref.getString("pw", "");
 
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
 
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(300,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-                PixelFormat.TRANSLUCENT
-        );
+        WindowManager.LayoutParams params;
+
+        if(android.os.Build.VERSION.SDK_INT >= 25){
+            params = new WindowManager.LayoutParams(300,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                    PixelFormat.TRANSLUCENT
+            );
+        }else{
+            params = new WindowManager.LayoutParams(300,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                    PixelFormat.TRANSLUCENT
+            );
+        }
 
         params.gravity = Gravity.LEFT | Gravity.TOP;
         mView = inflater.inflate(R.layout.web_browser , null);
@@ -95,30 +112,27 @@ public class Attendance extends Service {
         webview.setWebContentsDebuggingEnabled(true);
 
         wm.addView(mView, params);
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
 
 
         Thread thread  = new Thread(new Runnable() {
             @Override
             public void run() {
                 try{
+                    System.out.println(":::::::::::START::::::::출근::::::");
                     synchronizedLoadUrl("https://loginc.ecounterp.com");
                     synchronizedLoadUrl("javascript:" + querySelector("#com_code")+".value = 64583");
                     synchronizedLoadUrl("javascript:void(" + querySelector("#id")+".value = '"+id+"');");
                     synchronizedLoadUrl("javascript:void(" + querySelector("#passwd")+".value = '"+passwd+"');");
                     synchronizedLoadUrl("javascript:void(" + querySelector("#logintimeinck")+".checked = true );");
-//                    System.out.println("ID:::::::::::::::::::::::::" + id);
-//                    System.out.println("PASSWARD:::::::::::::::::::::::::" + passwd);
+                    System.out.println("ID:::::::::::::::::::::::::" + id);
+                    System.out.println("PASSWARD:::::::::::::::::::::::::" + passwd);
                     synchronizedLoadUrl("javascript:void(" + querySelector("#save")+".click());");
 
                     // 서비스 죽이기
                     Intent destory = new Intent(getBaseContext(), Attendance.class);
                     stopService(destory);
                 }catch(Exception e){
-
+                    e.printStackTrace();
                 }
             }
         });
@@ -130,9 +144,11 @@ public class Attendance extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        webview.destroy();
-        webview = null;
-        wm.removeView(mView);
+        try{
+            webview.destroy();
+            webview = null;
+            wm.removeView(mView);
+        }catch(Exception e){}
     }
 
 
@@ -149,7 +165,7 @@ public class Attendance extends Service {
         });
 
         int randomNum = (int) (Math.random() * randomvalue);
-        Thread.sleep(2000);
+        Thread.sleep(5000);
         Thread.sleep(randomNum);
     }
 

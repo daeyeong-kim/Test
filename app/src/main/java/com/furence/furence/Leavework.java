@@ -67,12 +67,23 @@ public class Leavework extends Service {
 
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
 
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(300,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-                PixelFormat.TRANSLUCENT
-        );
+        WindowManager.LayoutParams params;
+
+        if(android.os.Build.VERSION.SDK_INT >= 25){
+            params = new WindowManager.LayoutParams(300,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                    PixelFormat.TRANSLUCENT
+            );
+        }else{
+            params = new WindowManager.LayoutParams(300,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                    PixelFormat.TRANSLUCENT
+            );
+        }
 
         params.gravity = Gravity.LEFT | Gravity.TOP;
         mView = inflater.inflate(R.layout.web_browser , null);
@@ -86,7 +97,7 @@ public class Leavework extends Service {
         webview.setWebViewClient(new WebViewClient(){
             @Override
             public void onPageFinished(WebView view, String url) {
-                System.out.println(url);
+               // System.out.println(url);
                 if(url.contains("ERPLoginSuccess")){
                     String[] test = url.split("ec_req_sid=");
 
@@ -116,7 +127,7 @@ public class Leavework extends Service {
             @Override
             public void run() {
                 try{
-
+                    System.out.println(":::::::::::START::::::::퇴근::::::");
                     Calendar calendar = Calendar.getInstance();
 
 
@@ -130,8 +141,11 @@ public class Leavework extends Service {
 
                     synchronizedLoadUrl("javascript:void(" + querySelector("#save")+".click());");
                     synchronizedLoadUrl("https://loginc.ecounterp.com/ECERP/ECP/ECP050M?w_flag=1&ec_req_sid="+goUrl+"&ErpApp=#menuType=7&menuSeq=259&subMenu=M070306000000&subMenuSeq=259");
-                    synchronizedLoadUrl("javascript:" + querySelectorAll(".calItem") + "[" + dayOfMonth  + "].click();");
+                    synchronizedLoadUrl("javascript:void(" + querySelectorAll(".calItem") + "[" + dayOfMonth  + "].click());");
+                    System.out.println("javascript:" + querySelectorAll(".calItem") + "[" + dayOfMonth  + "].click();");
                     synchronizedLoadUrl("javascript:void(" + querySelector("#btn-row-btnclock") + ".click());");
+                    System.out.println("javascript:void(" + querySelector("#btn-row-btnclock") + ".click());");
+
 
                     // 서비스 죽이기
                     Intent destory = new Intent(getBaseContext(), Leavework.class);
@@ -150,14 +164,16 @@ public class Leavework extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        webview.destroy();
-        webview = null;
-        wm.removeView(mView);
+        try{
+            webview.destroy();
+            webview = null;
+            wm.removeView(mView);
+        }catch(Exception e){}
     }
 
 
     private void synchronizedLoadUrl(final String paramString) throws Exception {
-        synchronizedLoadUrl( paramString , 5000);
+        synchronizedLoadUrl( paramString , 7000);
     }
 
     private void synchronizedLoadUrl(final String paramString , int randomvalue) throws Exception {
@@ -186,5 +202,6 @@ public class Leavework extends Service {
         Intent destory = new Intent(getBaseContext(), Leavework.class);
         stopService(destory);
     }
+
 
 }
